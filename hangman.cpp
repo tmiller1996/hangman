@@ -7,13 +7,6 @@
 #include <string>
 #include <sstream>
 
-template<typename Iter, typename RandomGenerator>
-Iter random_select(Iter start, Iter end, RandomGenerator &rng){
-	std::uniform_int_distribution<> distribution(0, std::distance(start, end) - 1);
-	std::advance(start, distribution(rng));
-	return start;
-}
-
 bool ends_with(const std::string &str, const std::string &ending){
 		if(ending.size() > str.size()){
 			return false;
@@ -28,7 +21,9 @@ protected:
 	std::default_random_engine rng;
 
 	std::string randomWord() {
-		auto it = random_select(std::begin(lines), std::end(lines), rng);
+		auto it = std::begin(lines);
+		std::uniform_int_distribution<> distribution(0, std::distance(std::begin(lines), std::end(lines)) - 1);
+		std::advance(it, distribution(rng));
 		return *it;
 	}
 
