@@ -15,21 +15,10 @@ Iter random_select(Iter start, Iter end, RandomGenerator &rng){
 }
 
 bool ends_with(const std::string &str, const std::string &ending){
-    if(ending.size() > str.size()){
-    	return false;
-    }
-    return std::equal(std::rbegin(ending), std::rend(ending), std::rbegin(str));
-}
-
-template<typename Iter, typename T>
-bool contains(Iter begin, Iter end, const T &elem){
-	Iter it = std::find(begin, end, elem);
-	return it != end;
-}
-
-template<typename Container, typename T>
-bool contains(Container container, const T &elem){
-	return contains(std::begin(container), std::end(container), elem);
+		if(ending.size() > str.size()){
+			return false;
+		}
+		return std::equal(std::rbegin(ending), std::rend(ending), std::rbegin(str));
 }
 
 class Dict {
@@ -106,8 +95,10 @@ protected:
 
 	void handleGuess(char guess){
 		if(validGuess(guess)){
-			if(!contains(guessed, guess)){
-				if(contains(word, guess)){
+			auto it = std::find(std::begin(guessed), std::end(guessed), guess);
+			if(it == std::end(guessed)){
+				auto it = std::find(std::begin(word), std::end(word), guess);
+				if(it != std::end(word)){
 					guessed.push_back(guess);
 					std::cout << "Correct!" << std::endl;
 				}
@@ -130,7 +121,8 @@ protected:
 		std::string display(word.size(), '_');
 		for(std::size_t i = 0; i < word.size(); ++i){
 			char c = word[i];
-			if(contains(guessed, c)){
+			auto it = std::find(std::begin(guessed), std::end(guessed), c);
+			if(it != std::end(guessed)){
 				display[i] = c;
 			}
 		}
