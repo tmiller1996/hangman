@@ -119,7 +119,7 @@ protected:
 	}
 
 	bool lost() {
-		return lives < 0;
+		return lives <= 0;
 	}
 
 	bool validGuess(char guess){
@@ -133,7 +133,7 @@ protected:
 				auto it = std::find(std::begin(word), std::end(word), guess);
 				if(it != std::end(word)){
 					guessed.push_back(guess);
-					std::cout << "Correct!  The word was '" << word << "'" << std::endl;
+					std::cout << "Correct!" << std::endl;
 				}
 				else{
 					misses.push_back(guess);
@@ -187,10 +187,11 @@ public:
 				char guess = line[0];
 				handleGuess(guess);
 				if(won()){
-					std::cout << "You won!" << std::endl;
+					std::cout << "You won!  The word was '" << word << "'" << std::endl;
 				}
 				if(lost()){
 					std::cout << "Game over!" << std::endl;
+					printFigure();
 				}
 			}
 			else {
