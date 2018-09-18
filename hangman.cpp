@@ -2,10 +2,11 @@
 #include <vector>
 #include <fstream>
 #include <random>
-#include <memory>
 #include <algorithm>
 #include <string>
 #include <sstream>
+
+#include <dirent.h>
 
 bool ends_with(const std::string &str, const std::string &ending){
 		if(ending.size() > str.size()){
@@ -13,6 +14,42 @@ bool ends_with(const std::string &str, const std::string &ending){
 		}
 		return std::equal(std::rbegin(ending), std::rend(ending), std::rbegin(str));
 }
+
+class Figure {
+protected:
+	std::string directory;
+	std::vector<std::string> frames;
+
+public:
+	Figure(const std::string &directory) : directory(directory) {
+		std::vector<std::string> rframes;
+		DIR *d = opendir(directory.c_str());
+		if(d){
+			struct dirent *dir = nullptr;
+			while((dir = readdir(d))){
+				if(dir->d_type == DT_REG){
+					std::string file(dir->d_name);
+					std::ifstream ifile(directory + "/" + file);
+					if(ifile){
+						std::ostringstream osframe;
+						osframe << ifile.rdbuf();
+						rframes.push_back(osframe.str());
+					}
+				}
+			}
+			closedir(d);
+		}
+		std::copy(std::rbegin(rframes), std::rend(rframes), std::back_inserter(frames));
+	}
+
+	std::size_t size() const {
+		return frames.size();
+	}
+
+	std::string operator[](std::size_t index){
+		return frames.at(index);
+	}
+};
 
 class Dict {
 protected:
@@ -66,6 +103,7 @@ public:
 class Hangman {
 protected:
 	std::string word;
+	Figure figure;
 	int lives;
 	std::vector<char> guessed;
 	std::vector<char> misses;
@@ -95,7 +133,7 @@ protected:
 				auto it = std::find(std::begin(word), std::end(word), guess);
 				if(it != std::end(word)){
 					guessed.push_back(guess);
-					std::cout << "Correct!" << std::endl;
+					std::cout << "Correct!  The word was '" << word << "'" << std::endl;
 				}
 				else{
 					misses.push_back(guess);
@@ -112,6 +150,13 @@ protected:
 		}
 	}
 
+	void printFigure() {
+		auto frame = figure[static_cast<std::size_t>(lives)];
+		if(frame.size()){
+			std::cout << frame << std::endl;
+		}
+	}
+
 	void printWord() {
 		std::string display(word.size(), '_');
 		for(std::size_t i = 0; i < word.size(); ++i){
@@ -125,12 +170,13 @@ protected:
 	}
 
 public:
-	Hangman(const std::string &word, uint32_t lives) : word(word), lives(lives) {
+	Hangman(const std::string &word, const Figure &fig, uint32_t lives) : word(word), figure(fig), lives(lives) {
 	}
 
 	void play(){
 		std::string line;
 		while(!lost() && !won()){
+			printFigure();
 			printWord();
 			std::getline(std::cin, line);
 			if (line.size() == 0){
@@ -211,13 +257,27 @@ int main(int argc, char **argv){
 	if(word.size() == 0){
 		std::string file = "/usr/share/dict/words";
 		auto fileResult = hasFlagAndValue(args, "-f");
+		if(fileResult.first && wordResult.first){
+			std::cout << "an error" << std::endl;
+			exit(-1);
+		}
 		if(fileResult.first){
 			file = fileResult.second;
 		}
 		Dict dict(file);
 		word = dict.getWord();
 	}
-	Hangman hm(word, lives);
+	Figure fig("figure/");
+	if(livesResult.first){
+		if(static_cast<int>(fig.size()) - 1 != lives){
+			std::cout << "figures does not match lives" << std::endl;
+			exit(-1);
+		}
+	}
+	else{
+		lives = static_cast<int>(fig.size()) - 1;
+	}
+	Hangman hm(word, fig, lives);
 	hm.play();
 	return 0;
 }
