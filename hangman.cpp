@@ -111,7 +111,6 @@ protected:
 	Figure figure;
 	int lives;
 	std::vector<char> guessed;
-	std::vector<char> misses;
 
 	bool won() {
 		for(const char &c : word){
@@ -141,7 +140,7 @@ protected:
 					std::cout << "Correct!" << std::endl;
 				}
 				else{
-					misses.push_back(guess);
+					guessed.push_back(guess);
 					--lives;
 					std::cout << "Wrong!" << std::endl;
 				}
