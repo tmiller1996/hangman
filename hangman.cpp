@@ -22,24 +22,29 @@ protected:
 
 public:
 	Figure(const std::string &directory) : directory(directory) {
-		std::vector<std::string> rframes;
+		// get list of files
+		std::vector<std::string> files;
 		DIR *d = opendir(directory.c_str());
 		if(d){
 			struct dirent *dir = nullptr;
 			while((dir = readdir(d))){
 				if(dir->d_type == DT_REG){
-					std::string file(dir->d_name);
-					std::ifstream ifile(directory + "/" + file);
-					if(ifile){
-						std::ostringstream osframe;
-						osframe << ifile.rdbuf();
-						rframes.push_back(osframe.str());
-					}
+					files.emplace_back(dir->d_name);
 				}
 			}
 			closedir(d);
 		}
-		std::copy(std::rbegin(rframes), std::rend(rframes), std::back_inserter(frames));
+		// sort in descending order
+		std::sort(std::rbegin(files), std::rend(files));
+		// read files to frames vector
+		for(const auto &file : files){
+			std::ifstream ifile(directory + "/" + file);
+			if(ifile){
+				std::ostringstream osframe;
+				osframe << ifile.rdbuf();
+				frames.push_back(osframe.str());
+			}
+		}
 	}
 
 	std::size_t size() const {
