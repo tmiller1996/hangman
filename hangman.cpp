@@ -134,13 +134,12 @@ protected:
 		if(validGuess(guess)){
 			auto it = std::find(std::begin(guessed), std::end(guessed), guess);
 			if(it == std::end(guessed)){
+				guessed.push_back(guess);
 				auto it = std::find(std::begin(word), std::end(word), guess);
 				if(it != std::end(word)){
-					guessed.push_back(guess);
-					std::cout << "Correct!" << std::endl;
+					std::cout << "Hit!" << std::endl;
 				}
 				else{
-					guessed.push_back(guess);
 					--lives;
 					std::cout << "Wrong!" << std::endl;
 				}
